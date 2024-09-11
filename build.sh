@@ -9,7 +9,7 @@ VARIANT=HMP
 VERSION=CLO
 
 # The name of the device for which the kernel is built
-MODEL="Asus Max Pro M1"
+MODEL="ZenFone Max Pro M1"
 
 # The codename of the device
 DEVICE="X00TD"
@@ -28,7 +28,9 @@ LINKER=ld.lld
 CHANGELOGS=https://github.com/Tiktodz/android_kernel_asus_sdm636/commits/tom/hmp/
 
 TG_TOPIC=0
+BOT_MSG_URL="https://api.telegram.org/bot$TG_TOKEN/sendMessage"
 BOT_BUILD_URL="https://api.telegram.org/bot$TG_TOKEN/sendDocument"
+PROCS=$(nproc --all)
 
 tg_post_build()
 {
@@ -106,6 +108,8 @@ command -v java > /dev/null 2>&1
 mkdir -p out
 make O=out clean
 
+tg_post_msg "<b>$KBUILD_BUILD_VERSION Build Triggered</b>%0A<b>Docker OS: </b><code>$DISTRO</code>%0A<b>Kernel Version : </b><code>$KERVER</code>%0A<b>Date : </b><code>$(TZ=Asia/Jakarta date)</code>%0A<b>Device : </b><code>$MODEL [$DEVICE]</code>%0A<b>Pipeline Host : </b><code>$KBUILD_BUILD_HOST</code>%0A<b>Host Core Count : </b><code>$PROCS</code>%0A<b>Compiler Used : </b><code>$KBUILD_COMPILER_STRING</code>%0A<b>Linker : </b><code>$LINKER</code>%0a<b>Branch : </b><code>$CI_BRANCH</code>%0A<b>Top Commit : </b><code>$COMMIT_HEAD</code>%0A<a href='$CHANGELOGS'>Changelogs</a>"
+
 # Starting compilation
 make $KERNEL_DEFCONFIG O=out 2>&1 | tee -a error.log
 make -j$(nproc --all) O=out \
@@ -120,8 +124,6 @@ if ! [ -f $KERNELDIR/out/arch/arm64/boot/Image.gz-dtb ];then
     tg_post_build "error.log" "Build Error!"
     exit 1
 fi
-
-    tg_post_msg "<b>$KBUILD_BUILD_VERSION Build Triggered</b>%0A<b>Docker OS: </b><code>$DISTRO</code>%0A<b>Kernel Version : </b><code>$KERVER</code>%0A<b>Date : </b><code>$(TZ=Asia/Jakarta date)</code>%0A<b>Device : </b><code>$MODEL [$DEVICE]</code>%0A<b>Pipeline Host : </b><code>$HOST</code>%0A<b>Host Core Count : </b><code>$PROCS</code>%0A<b>Compiler Used : </b><code>$KBUILD_COMPILER_STRING</code>%0A<b>Linker : </b><code>$LINKER</code>%0a<b>Branch : </b><code>$CI_BRANCH</code>%0A<b>Top Commit : </b><code>$COMMIT_HEAD</code>%0A<a href='$CHANGELOGS'>Changelogs</a>"
 
 # Anykernel3 time!!
 if ! [ -d "$KERNELDIR/AnyKernel3" ]; then
